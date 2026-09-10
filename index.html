@@ -239,7 +239,10 @@ body.locked #wa{opacity:0;pointer-events:none}
 @keyframes sweep{0%{inset-inline-start:-12px}100%{inset-inline-start:100%}}
 
 /* ═══════════ THE FILM ═══════════ */
-#film{position:relative;height:820vh}
+/* The timeline grew from 101 beats to 114 when the regions and the station
+   caption were given room to be read; the section grows with it so every other
+   beat keeps the same amount of scroll per beat. */
+#film{position:relative;height:925vh}
 #stage{position:sticky;top:0;height:100svh;overflow:hidden;background:var(--navy-3)}
 .layer{position:absolute;inset:0;will-change:transform,opacity}
 /* A canvas is a replaced element: `inset:0` does not stretch it, so with no CSS
@@ -367,12 +370,38 @@ body.locked #wa{opacity:0;pointer-events:none}
 .nCard .c{margin-top:10px;font-family:var(--nums);font-size:clamp(24px,3.2vw,42px);
   font-weight:600;color:var(--red-lit);line-height:1;direction:ltr;unicode-bidi:isolate;display:block}
 .nCard .d{margin-top:12px;font-size:13.5px;color:var(--w-55);font-weight:300;line-height:1.75}
+/* On a phone the horizontal run showed one card at a time out of five and swept
+   them past in under half a screen of scrolling — the regions were unreadable.
+   Narrow screens get the whole list at once, stacked, and the pan is skipped. */
+@media (max-width:860px){
+  /* the list is centred in the space left between the header and the chapter
+     readout, not in the raw viewport, so the last region never hides behind
+     the bottom bar */
+  #netTrack{position:absolute;top:76px;bottom:104px;inset-inline:0;translate:none;
+    display:grid;grid-template-rows:repeat(5,1fr);align-content:center;
+    gap:clamp(4px,0.8vh,12px);
+    width:auto;padding:0 22px;transform:none!important}
+  .nCard{width:auto;padding-top:clamp(6px,1vh,12px);align-self:center}
+  .nCard .r{font-size:clamp(14.5px,4vw,18px);display:inline}
+  .nCard .c{display:inline;margin:0 0 0 8px;font-size:clamp(16px,4.4vw,21px);vertical-align:-1px}
+  .nCard .d{margin-top:2px;font-size:clamp(11px,2.9vw,12.5px);line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
 
 /* ch5 real station */
 #station{z-index:6;display:block;overflow:hidden;clip-path:inset(0 0 100% 0)}
 #stationImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform}
+/* The caption is white and sits in the middle of the frame, which is where this
+   photograph's sky is palest — at .30 alpha the words vanished into it. The
+   scrim never drops below .62 across the band the copy occupies. */
 #stationTint{position:absolute;inset:0;background:
-  linear-gradient(to top,rgba(8,16,34,.94) 0%,rgba(8,16,34,.30) 44%,rgba(8,16,34,.52) 100%)}
+  linear-gradient(to top,rgba(8,16,34,.94) 0%,rgba(8,16,34,.74) 26%,
+                  rgba(8,16,34,.64) 52%,rgba(8,16,34,.76) 100%)}
+
+/* The photograph carries z-index:6, so the caption — which had none — was
+   painted underneath it and never appeared at all. It belongs above the frame
+   it describes. */
+#stationCopy{z-index:7}
 
 /* ch6 resolve */
 #resolve{z-index:10}
@@ -884,7 +913,7 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
   .frow{grid-template-columns:1fr}
   .netWrap{--netH:380px}
   #stats .g{grid-template-columns:1fr 1fr;gap:22px 18px}
-  #film{height:660vh}
+  #film{height:745vh}
   #readout .t{width:84px}
   #hint{display:none}
   #mapScene .w{width:86vw}
@@ -1935,6 +1964,8 @@ function boot(){
   }
 
   /* ── the film: one scrubbed master timeline ── */
+  /* the regions beat is laid out differently on a narrow screen — see #netTrack */
+  const NARROW = () => innerWidth <= 860;
   let film=null;
   if(!RM){
     film=gsap.timeline({
@@ -1987,38 +2018,67 @@ function boot(){
         .fromTo('#ksa .artery',{strokeDashoffset:520},{strokeDashoffset:0,duration:9},55)
         .to(DOTS,{opacity:1,duration:6,stagger:{each:.22,from:'center'}},55)
         .to('#mapScene',{opacity:0,duration:4},64)
-        .fromTo('#netRun',{opacity:0},{opacity:1,duration:3},64)
-        .fromTo('#netTrack',{x:()=>innerWidth*.42},
-                {x:()=>-($('#netTrack').scrollWidth - innerWidth*.82),duration:14},64)
-        .to('#netRun',{opacity:0,duration:3},70);
+        /* The regions beat: a wide screen pans the row past the camera; a phone
+           holds the whole stacked list still and reveals it row by row, because
+           panning five cards through a 390px window left one legible at a time
+           for less than half a screen of scrolling. Either way the beat now
+           lasts long enough to actually read the cities. */
+        /* starts only once the map has fully gone: at 64 the two beats were both
+           readable at once and the regions sat on top of the outline */
+        .fromTo('#netRun',{opacity:0},{opacity:1,duration:3},68)
+        .fromTo('#netTrack',{x:()=> NARROW() ? 0 : innerWidth*.42},
+                {x:()=> NARROW() ? 0 : -($('#netTrack').scrollWidth - innerWidth*.82),
+                 duration:15},68)
+        .fromTo('.nCard',{opacity:0,y:16},
+                {opacity:1,y:0,duration:3.5,stagger:.9,
+                 immediateRender:false},69)
+        .to('#netRun',{opacity:0,duration:3},80);
 
-    film.set('#station',{opacity:1},70)
+    film.set('#station',{opacity:1},82)
         .fromTo('#station',{clipPath:'inset(0 0 100% 0)'},
-                {clipPath:'inset(0 0 0% 0)',duration:11,ease:'power2.inOut'},71)
-        .fromTo('#stationImg',{scale:1.18,yPercent:3},{scale:1,yPercent:0,duration:19,ease:'power2.out'},71)
-        .fromTo('#stationCopy',{opacity:0},{opacity:1,duration:5},77)
-        .fromTo('#stationCopy .f-in',{y:46},{y:-30,duration:12},77)
-        .to('#stationCopy',{opacity:0,duration:5},85)
-        .to('#station',{opacity:0,duration:5},86);
+                {clipPath:'inset(0 0 0% 0)',duration:9,ease:'power2.inOut'},83)
+        .fromTo('#stationImg',{scale:1.18,yPercent:3},{scale:1,yPercent:0,duration:22,ease:'power2.out'},83)
+        /* The caption used to arrive 35% into the shot and leave almost at once,
+           so it was gone before it could be read. It now lands as the photograph
+           finishes wiping in and holds for most of the shot, drifting only a
+           little instead of sliding the whole way up the frame. */
+        .fromTo('#stationCopy',{opacity:0},{opacity:1,duration:4},86)
+        .fromTo('#stationCopy .f-in',{y:26},{y:-16,duration:20},86)
+        .to('#stationCopy',{opacity:0,duration:4},100)
+        .to('#station',{opacity:0,duration:5},101);
 
-    film.to('#thread',{rotate:90,scaleY:44,opacity:.85,y:'16vh',duration:8,ease:'power3.inOut'},86)
-        .fromTo('#resolve',{opacity:0},{opacity:1,duration:5},88)
-        .fromTo('#resolve .f-in',{y:56},{y:0,duration:10,ease:'power2.out'},88)
-        .to('#thread',{opacity:0,duration:4},95)
-        .to('#vig',{opacity:.4,duration:6},94)
-        .to('#seam',{opacity:1,duration:6},95);
+    /* The film used to end by washing everything to white, which erased the one
+       thing it was building towards — «اطلب عرض سعر لأسطولك» — into white on
+       white for a whole screen, and then hit a navy gradient below it, so the
+       visitor scrolled through white, dark, white. The film now ends on its own
+       closing frame and the navy-to-paper band beneath carries the handover,
+       which is what that band was built to do. */
+    /* the thread lies down into a rule at the close; at 16vh it struck through
+       the closing paragraph, so it settles below the call to action instead */
+    film.to('#thread',{rotate:90,scaleY:44,opacity:.5,y:'30vh',duration:8,ease:'power3.inOut'},101)
+        .fromTo('#resolve',{opacity:0},{opacity:1,duration:5},103)
+        .fromTo('#resolve .f-in',{y:56},{y:0,duration:10,ease:'power2.out'},103)
+        .to('#thread',{opacity:0,duration:4},110)
+        .to('#vig',{opacity:.4,duration:6},109);
 
-    const CH=[[0,.14,'01','الطريق'],[.14,.32,'02','الفجر'],[.32,.50,'03','الأرقام'],
-              [.50,.72,'04','الشبكة'],[.72,.88,'05','المحطة'],[.88,1.01,'06','الشراكة']];
+    /* Chapter bounds are fractions of the whole timeline, so they are derived
+       from the beat numbers above rather than hand-tuned — otherwise the
+       readout drifts out of step whenever a beat is given more room. */
+    const T = film.duration();
+    const CH=[[0,16/T,'01','الطريق'],[16/T,36/T,'02','الفجر'],[36/T,56/T,'03','الأرقام'],
+              [56/T,68/T,'04','الخريطة'],[68/T,82/T,'05','الشبكة'],
+              [82/T,101/T,'06','المحطة'],[101/T,1.01,'07','الشراكة']];
     let cur=-1;
     ScrollTrigger.create({
       trigger:'#film',start:'top top',end:'bottom bottom',
       onUpdate(self){
         const p=self.progress;
         $('#chBar').style.width=(p*100).toFixed(2)+'%';
-        // counters run off film progress — scrubbed dummy tweens don't re-fire on a ?jump landing
-        setCounters((p-.35)/.09);
-        $('#stnCount').textContent = Math.round(clamp((p-.56)/.08)*200);
+        // counters run off film progress — scrubbed dummy tweens don't re-fire
+        // on a ?jump landing. Keyed to beat numbers so they stay in step with
+        // the scenes they belong to when a beat is given more room.
+        setCounters((p*T-36)/10);
+        $('#stnCount').textContent = Math.round(clamp((p*T-56)/8)*200);
         for(let i=0;i<CH.length;i++){
           if(p>=CH[i][0] && p<CH[i][1]){
             if(cur!==i){ cur=i; $('#chIdx').textContent=CH[i][2]; $('#chName').textContent=CH[i][3]; }
@@ -2027,7 +2087,7 @@ function boot(){
         }
         hint.classList.toggle('hide', p>.02);
         readout.classList.toggle('hide', p>.985);
-        starA=clamp(1-p/.30); starOn=starA>.01;
+        starA=clamp(1-(p*T)/34); starOn=starA>.01;
         if(!starOn) cx.clearRect(0,0,innerWidth,innerHeight);
       }
     });
