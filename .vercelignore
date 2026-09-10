@@ -1,34 +1,20 @@
-# The site is index.html + assets/ + vendor/. Everything below is the local
-# harness — it has no business being served from the production domain.
+# What ships is static: index.html, assets/, vendor/, and the SEO files
+# (robots.txt, sitemap.xml, site.webmanifest). Everything else here is the
+# local build + verification harness and must not reach the production domain.
+
 node_modules/
 shots/
 assets/src/
 .claude/
 
-# local dev server
-server.js
+# every root-level .js is either the dev server or a test script — the only
+# runtime JavaScript is assets/stations.js and the vendored libraries
+/*.js
 
-# verification suite
-audit.js
-audit2.js
-coldload.js
-corridortest.js
-fabmap.js
-fabtest.js
-formtest.js
-journey.js
-logocheck.js
-mapfit.js
-numberstest.js
-ogcard.js
-probe.js
-railtest.js
-rmtest.js
-shotpartners.js
-spike2.js
-taptest.js
-uxtest.js
-verify.js
+# the harness's package.json — its "main"/"start" make Vercel treat this as a
+# Node server instead of a static site
+package.json
+package-lock.json
 
 # internal notes
 EVALUATION.md
