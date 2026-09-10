@@ -113,6 +113,11 @@ a[href^="tel:"] .num,a[href^="tel:"]{letter-spacing:.05em}
 /* standalone figures (counters, big stats) still want a block box */
 .figure,.netStat .v,#stats .v,#mapCount .n{display:inline-block}
 .lat{font-family:var(--lat);letter-spacing:.16em;text-transform:uppercase}
+/* Arabic is a joining script: letters connect into a single written shape, and
+   any letter-spacing prises them apart so the word stops reading as a word.
+   Latin small-caps labels do want the tracking, so where the two scripts share
+   a line the Arabic run has to opt out. */
+.ar{font-family:var(--ar);letter-spacing:normal;text-transform:none}
 
 /* ───────── skip link ───────── */
 .skip{position:fixed;top:12px;inset-inline-start:20px;z-index:999;
@@ -258,7 +263,9 @@ nav.main a:hover::after{transform:scaleX(1)}
 #thread{position:absolute;left:50%;top:50%;z-index:5;
   width:5px;height:74px;margin-left:-2.5px;margin-top:-37px;
   background:#fff;border-radius:4px;box-shadow:0 0 24px rgba(255,255,255,.5);
-  will-change:transform,opacity}
+  /* invisible at rest — see the intro block: it sits on the logotype, so it
+     only draws itself in once the film starts scrubbing */
+  opacity:0;will-change:transform,opacity}
 /* Scales rather than growing by height: the bar lives inside #thread, which the
    film stretches to 9.5x, so animating `height` relaid out and repainted a
    26px-blur shadow at that scale on every frame. */
@@ -271,8 +278,10 @@ nav.main a:hover::after{transform:scaleX(1)}
 .f-in{padding-inline:var(--gut);max-width:min(1000px,90vw);text-align:center;position:relative}
 .f-in::before{content:"";position:absolute;inset:-30% -22%;z-index:-1;
   background:radial-gradient(58% 54% at 50% 50%,rgba(8,16,34,.90),rgba(8,16,34,.58) 52%,transparent 78%)}
-.f-tag{font-family:var(--lat);font-size:clamp(10px,1.3vw,12px);letter-spacing:.22em;
-  color:var(--red-lit);margin-bottom:16px}
+/* both f-tags are Arabic, so they take the Arabic face at its natural tracking —
+   weight carries the label, not letter-spacing */
+.f-tag{font-family:var(--ar);font-size:clamp(11px,1.5vw,13.5px);letter-spacing:normal;
+  font-weight:600;color:var(--red-lit);margin-bottom:16px}
 .f-h{font-size:clamp(28px,5.6vw,72px);font-weight:800;color:#fff;line-height:1.32}
 .f-p{margin-top:20px;font-size:clamp(14.5px,1.8vw,19px);color:var(--w-80);font-weight:300;
   max-width:56ch;margin-inline:auto;line-height:1.85}
@@ -290,9 +299,11 @@ nav.main a:hover::after{transform:scaleX(1)}
 #wordmark span{display:inline-block;will-change:transform}
 #heroSub{margin-top:clamp(10px,1.8vh,20px);font-size:clamp(14px,2.3vw,20px);
   font-weight:300;color:var(--w-80)}
+/* the words here are Arabic — the Latin face and its tracking belong to the
+   figures alone, which carry them through .num */
 #heroMeta{margin-top:clamp(22px,4vh,42px);display:flex;justify-content:center;
   flex-wrap:wrap;gap:clamp(14px,3.6vw,40px);
-  font-family:var(--lat);font-size:clamp(10px,1.3vw,12px);letter-spacing:.16em;color:var(--w-55)}
+  font-family:var(--ar);font-size:clamp(11.5px,1.5vw,14px);letter-spacing:normal;color:var(--w-55)}
 /* Space Grotesk figures and Tajawal words have very different vertical metrics,
    so baseline alignment leaves the number sitting visibly lower than its label.
    Centre the two on each other instead. */
@@ -470,7 +481,7 @@ main{position:relative;z-index:30;background:var(--paper);color:var(--ink)}
 /* the chairman quotes a named four-value set; the six under «قيمنا» are the
    corporate values. Labelling each stops them reading as two rival lists. */
 .chV .chVLbl{flex-basis:100%;border:0;padding:0;margin-bottom:2px;
-  font-size:12px;font-weight:600;color:var(--ink-50);letter-spacing:.01em}
+  font-size:12px;font-weight:600;color:var(--ink-50);letter-spacing:normal}
 .chV a{display:flex;flex-wrap:wrap;gap:10px}
 
 /* vision & mission — blue */
@@ -782,7 +793,8 @@ footer{background:var(--navy);color:#fff;padding:clamp(54px,7vw,100px) var(--gut
   gap:clamp(20px,2.6vw,42px)}
 footer .mk img{height:46px;width:auto;margin-bottom:20px}
 footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;max-width:36ch}
-.fc h5{font-size:11px;font-family:var(--lat);letter-spacing:.18em;color:var(--red-lit);
+/* Arabic column headings — Arabic face, no tracking */
+.fc h5{font-size:12.5px;font-family:var(--ar);letter-spacing:normal;color:var(--red-lit);
   margin:0 0 18px;font-weight:600}
 .fc a,.fc p{display:block;font-size:14.5px;color:var(--w-80);margin-bottom:12px;
   transition:color .3s;line-height:1.8}
@@ -794,7 +806,7 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
 /* direct child only — a descendant selector here turned every inline .num
    inside the address into a full-width flex box on its own line */
 .fc.contact .ln > span{display:flex;flex-direction:column;gap:2px;min-width:0}
-.fc.contact .k{font-size:11.5px;font-weight:600;color:var(--w-55);letter-spacing:.02em}
+.fc.contact .k{font-size:11.5px;font-weight:600;color:var(--w-55);letter-spacing:normal}
 /* `overflow-wrap:anywhere` also shrinks the intrinsic min-content width, which
    snapped every Latin figure in the address onto a line of its own. Only the
    e-mail needs to break, and break-word does it without touching sizing. */
@@ -848,7 +860,6 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
   #hint{display:none}
   #mapScene .w{width:86vw}
   .chP{max-width:290px;margin-inline:auto}
-  /* the wordmark is smaller here — keep the centreline from crossing the subline */
   #thread{height:44px;margin-top:-120px}
   #hero .f-in{transform:translateY(-6vh)}
   .f-in::before{inset:-26% -14%}
@@ -1075,7 +1086,7 @@ html.rm .pRails{-webkit-mask-image:none;mask-image:none}
 <!-- VALUES — the four the company commits to -->
 <section class="sec" id="values">
   <div class="wrap">
-    <div class="eyebrow rv">OUR VALUES — قيمنا</div>
+    <div class="eyebrow rv">OUR VALUES — <span class="ar">قيمنا</span></div>
     <h2 class="h2 rv">أربع قيم تحكم كل قرار نتخذه</h2>
     <p class="lede rv">نستمد قيمنا من ديننا الحنيف ومن المبادئ التي تربّينا عليها في المملكة العربية السعودية.
       وهي المنظومة التي التزمنا بها تجاه عملائنا منذ اليوم الأول: <b>بترولي ثقة على الطريق</b>.</p>
@@ -1236,7 +1247,7 @@ html.rm .pRails{-webkit-mask-image:none;mask-image:none}
   <div class="wrap">
     <div class="netHead">
       <div>
-        <div class="eyebrow rv">OUR NETWORK — فروعنا</div>
+        <div class="eyebrow rv">OUR NETWORK — <span class="ar">فروعنا</span></div>
         <h2 class="h2 rv">شبكة محطاتنا على الخريطة</h2>
         <p class="lede rv">كل محطة في القائمة موجودة على الخريطة بموقعها الحقيقي. اختر المنطقة أو ابحث بالاسم، ثم اضغط على المحطة لترى موقعها بالضبط.</p>
       </div>
@@ -1874,9 +1885,13 @@ function boot(){
     intro.push(
       gsap.from('#wordmark span',{yPercent:118,duration:1.3,ease:'power4.out',delay:.12}),
       gsap.from('#heroSub',{y:22,opacity:0,duration:1,ease:'power3.out',delay:.66}),
-      gsap.from('#heroMeta span',{y:18,opacity:0,duration:.9,ease:'power3.out',stagger:.08,delay:.84}),
-      gsap.from('#thread',{scaleY:0,opacity:0,duration:1.1,ease:'power3.inOut'})
+      gsap.from('#heroMeta span',{y:18,opacity:0,duration:.9,ease:'power3.out',stagger:.08,delay:.84})
     );
+    /* The thread is pinned to the middle of the stage, which is exactly where
+       the logotype sits — drawn at load it read as a stray stroke across
+       «بترولي», worst on a phone where the bar lands on the ي. The opening
+       frame is now the wordmark alone; the thread draws itself in as the film
+       starts moving, which is also where it first means anything. */
   } else {
     gsap.set('.scene',{opacity:1});
   }
@@ -1897,7 +1912,9 @@ function boot(){
         .to('#roadWrap',{opacity:1,duration:7},7)
         .fromTo('#road',{yPercent:14},{yPercent:0,duration:26},7)
         .fromTo('#dashes',{yPercent:0},{yPercent:-68,duration:26},7)
-        .fromTo('#thread',{scaleY:1,opacity:1},{scaleY:5.2,opacity:.9,duration:8},6)
+        /* draws in from nothing as the wordmark lifts away, so it never sits on
+           the logotype in the opening frame */
+        .fromTo('#thread',{scaleY:.2,opacity:0},{scaleY:5.2,opacity:.9,duration:8},6)
         .to('#thread',{scaleY:1.4,y:'-8vh',duration:8},15)
         .to('#skyDawn',{opacity:1,duration:14},15)
         .to('#stars',{opacity:0,duration:9},14)
