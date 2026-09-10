@@ -1,0 +1,15 @@
+{
+  "name": "شركة بترولي للخدمات البترولية والنقليات",
+  "short_name": "بترولي",
+  "description": "أكثر من 200 محطة و136 ناقلة تخدم المملكة منذ 1976 — وقود الأساطيل والشركات.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0E2244",
+  "theme_color": "#0E2244",
+  "icons": [
+    { "src": "assets/touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

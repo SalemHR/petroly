@@ -1,0 +1,17 @@
+{
+  "name": "petroly",
+  "version": "1.0.0",
+  "description": "Single-page Arabic (RTL) scroll-film site for شركة بترولي للخدمات البترولية والنقليات.",
+  "main": "formtest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "puppeteer-core": "^25.10.0"
+  }
+}
