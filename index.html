@@ -363,6 +363,10 @@ body.locked #wa{opacity:0;pointer-events:none}
 
 /* ch4b region run */
 #netRun{z-index:8;opacity:0;overflow:hidden;display:block}
+#netLabel{position:absolute;top:clamp(78px,12vh,132px);inset-inline:0;text-align:center;
+  padding-inline:22px;font-size:clamp(12px,1.5vw,15px);font-weight:600;
+  color:var(--w-80);line-height:1.7}
+#netLabel .num{color:var(--red-lit);font-weight:700}
 #netTrack{position:absolute;top:50%;translate:0 -50%;display:flex;
   gap:clamp(18px,3.6vw,56px);width:max-content;padding-inline:12vw;will-change:transform}
 .nCard{width:clamp(210px,25vw,320px);border-top:2px solid var(--w-line);padding-top:20px}
@@ -377,7 +381,9 @@ body.locked #wa{opacity:0;pointer-events:none}
   /* the list is centred in the space left between the header and the chapter
      readout, not in the raw viewport, so the last region never hides behind
      the bottom bar */
-  #netTrack{position:absolute;top:76px;bottom:104px;inset-inline:0;translate:none;
+  /* clears the label above it */
+  #netLabel{top:80px;font-size:12px}
+  #netTrack{position:absolute;top:146px;bottom:100px;inset-inline:0;translate:none;
     display:grid;grid-template-rows:repeat(5,1fr);align-content:center;
     gap:clamp(4px,0.8vh,12px);
     width:auto;padding:0 22px;transform:none!important}
@@ -1092,7 +1098,13 @@ html.rm .pRails{-webkit-mask-image:none;mask-image:none}
       </div>
     </div>
 
-    <div class="scene" id="netRun"><div id="netTrack"></div></div>
+    <div class="scene" id="netRun">
+      <!-- The two figures on this page mean different things and the region
+           counts add up to the smaller one, so the beat where a reader is
+           counting states the relationship outright. Filled from the data. -->
+      <div id="netLabel"></div>
+      <div id="netTrack"></div>
+    </div>
 
     <div class="scene" id="station">
       <img id="stationImg" src="assets/film-station.jpg" alt="محطة بترولي عند الغروب" width="1800" height="1105" decoding="async">
@@ -1543,6 +1555,14 @@ const REGIONS = REGION_ORDER.filter(r => REGION_COUNT[r])
   .map(r => [`المنطقة ${r}`, String(REGION_COUNT[r]), REGION_COPY[r]]);
 $('#netTrack').innerHTML = REGIONS.map(([r,c,d])=>
   `<div class="nCard"><div class="r">${r}</div><span class="c">${c}</span><div class="d">${d}</div></div>`).join('');
+
+/* The region counts are the branches whose exact locations are published on the
+   map, and they sum to fewer than the network total the company states. Left
+   unlabelled the two figures read as a contradiction, so this line names both
+   and the relationship between them, right where the reader is adding up. */
+$('#netLabel').innerHTML =
+  `الفروع المنشورة على الخريطة — <span class="num">${ALL.length}</span> فرعاً ` +
+  `بموقع محدّد، ضمن شبكة تتجاوز <span class="num">200</span> محطة`;
 
 const STN = [[105,160],[130,190],[150,145],[200,120],[240,155],[275,135],[310,170],[345,175],
  [380,205],[400,225],[355,215],[300,240,1],[320,265],[285,275],[340,245],[310,300],[160,220],
