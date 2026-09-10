@@ -1,0 +1,34 @@
+# The site is index.html + assets/ + vendor/. Everything below is the local
+# harness — it has no business being served from the production domain.
+node_modules/
+shots/
+assets/src/
+.claude/
+
+# local dev server
+server.js
+
+# verification suite
+audit.js
+audit2.js
+coldload.js
+corridortest.js
+fabmap.js
+fabtest.js
+formtest.js
+journey.js
+logocheck.js
+mapfit.js
+numberstest.js
+ogcard.js
+probe.js
+railtest.js
+rmtest.js
+shotpartners.js
+spike2.js
+taptest.js
+uxtest.js
+verify.js
+
+# internal notes
+EVALUATION.md
