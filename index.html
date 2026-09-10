@@ -143,6 +143,17 @@ header{position:fixed;top:0;inset-inline:0;z-index:120;
   transition:color .45s ease,background .45s ease,box-shadow .45s ease,padding .45s ease}
 header.solid{background:rgba(255,255,255,.94);backdrop-filter:blur(16px) saturate(1.5);
   color:var(--ink);box-shadow:0 1px 0 var(--hair),0 8px 30px rgba(19,35,61,.07);padding-block:11px}
+/* A filtered element is the containing block for its fixed descendants, which
+   collapsed the full-screen menu onto the header. With the menu open the page
+   behind is hidden, so the blur has nothing to do — see setNav(). The bar then
+   sits on the navy panel, so it takes the light treatment: white close button,
+   white wordmark. */
+header.navopen{backdrop-filter:none;background:transparent;box-shadow:none;color:#fff}
+/* the panel is a later sibling, so it paints over the wordmark unless the
+   wordmark is lifted with the close button */
+header.navopen .brand{z-index:2}
+header.navopen .brand .lg-dark{opacity:1}
+header.navopen .brand .lg-light{opacity:0}
 .brand{display:flex;align-items:center;position:relative;flex:none}
 .brand img{height:32px;width:auto;transition:opacity .4s ease}
 .brand .lg-light{position:absolute;inset-inline-start:0;top:50%;translate:0 -50%;opacity:0}
@@ -186,6 +197,8 @@ nav.main a:hover::after{transform:scaleX(1)}
              background .3s,width .38s var(--ease),padding .38s var(--ease)}
 #wa.on{opacity:1;transform:none;pointer-events:auto}
 #wa.away{opacity:0;transform:translateY(14px) scale(.9);pointer-events:none}
+/* the menu covers the page — nothing should float on top of it */
+body.locked #wa{opacity:0;pointer-events:none}
 #wa:hover{background:#1FBE5B}
 #wa svg{width:23px;height:23px;flex:none}
 #wa .lbl{white-space:nowrap;max-width:0;overflow:hidden;opacity:0;
@@ -840,15 +853,31 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
 }
 @media (max-width:860px){
   nav.main{position:fixed;inset:0;background:var(--navy);color:#fff;
-    flex-direction:column;justify-content:center;align-items:center;gap:8px;
+    /* dvh tracks the visible area as a phone browser's toolbars slide away;
+       the vh line before it is the fallback where dvh is unsupported */
+    height:100vh;height:100dvh;
+    flex-direction:column;justify-content:flex-start;align-items:center;gap:8px;
     font-size:21px;font-weight:700;opacity:0;visibility:hidden;
-    transition:opacity .4s var(--ease),visibility .4s;padding:80px 24px}
+    transition:opacity .4s var(--ease),visibility .4s;padding:80px 24px;
+    /* a list taller than the screen has to scroll. Centring it with
+       justify-content would push the overflow off the top edge, where it is
+       unreachable — auto margins centre it only while there is room to spare. */
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  nav.main > :first-child{margin-block-start:auto}
+  nav.main > :last-child{margin-block-end:auto}
   nav.main.open{opacity:1;visibility:visible}
-  nav.main a{padding:14px 8px}
+  nav.main a{padding:14px 8px;flex:none}
+  /* a phone held sideways, or a small browser window: tighten the list so the
+     whole menu, CTA included, still lands on one screen */
+  @media (max-height:680px){
+    nav.main{padding:64px 24px 28px;font-size:18px;gap:2px}
+    nav.main a{padding:10px 8px}
+    nav.main .navCta{margin-top:14px;padding:12px 30px;font-size:16px}
+  }
   nav.main a::after{display:none}
   #burger{display:block}
   header .hdr-cta{display:none}
-  nav.main .navCta{margin-top:22px;background:var(--red);color:#fff;
+  nav.main .navCta{margin-top:22px;background:var(--red-cta);color:#fff;
     border-radius:100px;padding:15px 34px;font-size:17px;font-weight:800}
   .svc,.wG,.vmG,.valGrid,.abG{grid-template-columns:1fr}
   .vmG{gap:1px}
@@ -1766,14 +1795,23 @@ renderStations();
 
 /* ───── header / nav ───── */
 const hdr=$('#hdr'), readout=$('#readout'), hint=$('#hint'), burger=$('#burger'), nav=$('#nav');
-function closeNav(){ nav.classList.remove('open'); burger.classList.remove('open');
-  burger.setAttribute('aria-expanded','false'); document.body.classList.remove('locked'); }
-burger.addEventListener('click',()=>{
-  const o = nav.classList.toggle('open');
-  burger.classList.toggle('open', o);
-  burger.setAttribute('aria-expanded', String(o));
-  document.body.classList.toggle('locked', o);
-});
+/* The menu panel is `position:fixed; inset:0`, but a scrolled header carries a
+   backdrop-filter, and a filtered element becomes the containing block for its
+   fixed descendants. So once the visitor had scrolled — which is whenever they
+   actually reach for the menu — the full-screen panel sized itself to the
+   header's own 160px box and the first three links were cut off above it with
+   no way to scroll to them. Drop the blur while the menu is open: the panel is
+   covering the page anyway, so there is nothing left to blur. */
+function setNav(open){
+  nav.classList.toggle('open', open);
+  burger.classList.toggle('open', open);
+  burger.setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('locked', open);
+  hdr.classList.toggle('navopen', open);
+  if (open) nav.scrollTop = 0;
+}
+function closeNav(){ setNav(false); }
+burger.addEventListener('click',()=> setNav(!nav.classList.contains('open')));
 $$('#nav a').forEach(a=>a.addEventListener('click',closeNav));
 addEventListener('keydown',e=>{ if(e.key==='Escape') closeNav(); });
 
