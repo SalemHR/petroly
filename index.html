@@ -102,7 +102,13 @@ button,input,select,textarea{font:inherit;color:inherit}
    `unicode-bidi:isolate` is the whole fix — do NOT add display:inline-block here.
    An inline-block cannot break across lines, so a number sitting mid-sentence
    gets shoved to the start of its own line in a narrow column. */
-.num{font-family:var(--nums);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+/* Space Grotesk's "1" carries a flag, so a run of them closed up into a single
+   shape — the unified phone number 920004611 read as though the last two digits
+   were joined. A hair of positive tracking keeps every digit its own. */
+.num{font-family:var(--nums);font-variant-numeric:tabular-nums;letter-spacing:.012em}
+/* a phone number is copied down and dialled by hand — give its digits more air
+   than a headline figure needs */
+a[href^="tel:"] .num,a[href^="tel:"]{letter-spacing:.05em}
 .num,.figure{direction:ltr;unicode-bidi:isolate}
 /* standalone figures (counters, big stats) still want a block box */
 .figure,.netStat .v,#stats .v,#mapCount .n{display:inline-block}
@@ -156,17 +162,34 @@ nav.main a:hover::after{transform:scaleX(1)}
 #burger.open i:nth-child(3){transform:translateY(-7px) rotate(45deg)}
 
 /* ───────── WhatsApp + skip-intro affordances ───────── */
-#wa{position:fixed;inset-inline-start:clamp(16px,2.2vw,28px);bottom:clamp(22px,3vh,34px);
-  z-index:130;display:inline-flex;align-items:center;gap:10px;
+/* Floating WhatsApp shortcut. It is a circle at rest so it covers as little of
+   the page as possible — the written label only unfurls when a pointer is on it,
+   and it steps aside entirely once the visitor reaches the enquiry panel, where
+   it would sit on top of the very controls it is meant to lead them to. */
+/* Pinned to the line-END side. In an RTL page every heading and every line of
+   body copy begins on the right, so a button parked there lands on the first
+   words of whatever the visitor is reading. On the left it meets ragged
+   line-ends instead. */
+#wa{position:fixed;inset-inline-end:clamp(16px,2.2vw,28px);bottom:clamp(22px,3vh,34px);
+  z-index:130;display:inline-flex;align-items:center;
   background:#25D366;color:#0A2A14;border-radius:100px;
-  padding:13px 20px;font-size:14.5px;font-weight:800;
+  width:56px;height:56px;justify-content:center;
+  font-size:14.5px;font-weight:800;
   box-shadow:0 10px 28px rgba(37,211,102,.36);
   transform:translateY(14px);opacity:0;pointer-events:none;
-  transition:opacity .45s var(--ease),transform .45s var(--ease),background .3s}
+  transition:opacity .45s var(--ease),transform .45s var(--ease),
+             background .3s,width .38s var(--ease),padding .38s var(--ease)}
 #wa.on{opacity:1;transform:none;pointer-events:auto}
+#wa.away{opacity:0;transform:translateY(14px) scale(.9);pointer-events:none}
 #wa:hover{background:#1FBE5B}
-#wa svg{width:21px;height:21px;flex:none}
-#wa .lbl{white-space:nowrap}
+#wa svg{width:23px;height:23px;flex:none}
+#wa .lbl{white-space:nowrap;max-width:0;overflow:hidden;opacity:0;
+  transition:max-width .38s var(--ease),opacity .28s,margin .38s var(--ease)}
+/* only a real pointer gets the expanding label; on touch it stays a circle */
+@media (hover:hover) and (pointer:fine){
+  #wa:hover,#wa:focus-visible{width:auto;padding:0 22px}
+  #wa:hover .lbl,#wa:focus-visible .lbl{max-width:120px;opacity:1;margin-inline-start:10px}
+}
 
 /* a mouse user had no visible way past the intro — the skip link is keyboard-only */
 #skipFilm{position:fixed;bottom:24px;inset-inline-start:var(--gut);z-index:110;
@@ -236,7 +259,11 @@ nav.main a:hover::after{transform:scaleX(1)}
   width:5px;height:74px;margin-left:-2.5px;margin-top:-37px;
   background:#fff;border-radius:4px;box-shadow:0 0 24px rgba(255,255,255,.5);
   will-change:transform,opacity}
-#fill{position:absolute;inset-inline:0;bottom:0;height:0%;border-radius:4px;
+/* Scales rather than growing by height: the bar lives inside #thread, which the
+   film stretches to 9.5x, so animating `height` relaid out and repainted a
+   26px-blur shadow at that scale on every frame. */
+#fill{position:absolute;inset-inline:0;bottom:0;height:100%;border-radius:4px;
+  transform:scaleY(0);transform-origin:50% 100%;will-change:transform;
   background:linear-gradient(to top,var(--red),var(--red-lit));
   box-shadow:0 0 26px rgba(237,27,36,.75)}
 
@@ -358,26 +385,32 @@ main{position:relative;z-index:30;background:var(--paper);color:var(--ink)}
 /* about */
 #about{background:var(--paper)}
 
+/* «من نحن» — the heading holds one column and the prose the other, the same
+   editorial split «رؤيتنا ورسالتنا» uses. Stacked in one column the section
+   left half the band empty once the old six-value grid moved out. */
+.abG{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(24px,4vw,72px);
+  align-items:start}
+.abBody .lede{max-width:none}
+.abBody .lede + .lede{margin-top:22px}
+
 /* values — four, given a section of their own rather than six in a footnote */
 #values{background:var(--paper-2)}
 .valGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,1.8vw,24px);
   margin-top:clamp(38px,5.4vw,72px)}
 .valGrid>*{min-width:0}
-.val{position:relative;overflow:hidden;background:#fff;border:1px solid var(--hair);
+/* Same card as «لماذا تنقل الشركات أسطولها» — white, hairline, red top rule —
+   so the page has one card language rather than two. The values carried a large
+   ghost numeral, which collided with that section's genuinely ordered list and
+   left a dead band across the top of every card on a phone. Four values are a
+   set, not a ranking, so the numbering is gone and the icon leads. */
+.val{position:relative;background:#fff;border:1px solid var(--hair);
   border-radius:var(--rad);padding:clamp(26px,2.8vw,38px) clamp(22px,2.4vw,32px);
-  border-top:4px solid var(--blue);
-  transition:transform .5s var(--ease),box-shadow .5s var(--ease),border-top-color .5s}
-.val:hover{transform:translateY(-6px);border-top-color:var(--red);
-  box-shadow:0 24px 56px rgba(19,35,61,.13)}
-/* The numeral is a watermark behind the content, not a label to read. It is
-   pinned with a physical `left` on purpose: `.num` carries direction:ltr for
-   bidi isolation, which flips what `inset-inline-start` resolves to. */
-.val .vn{position:absolute;top:-.06em;left:.06em;
-  font-family:var(--nums);font-size:clamp(72px,7.4vw,106px);font-weight:700;
-  line-height:1;color:var(--paper-3);pointer-events:none;user-select:none}
-.val svg{position:relative;width:34px;height:34px;color:var(--red);margin-bottom:18px}
-.val h3{position:relative;font-size:clamp(20px,2.4vw,27px)}
-.val p{position:relative;margin-top:12px;font-size:14.5px;color:var(--ink-70);
+  border-top:4px solid var(--red);
+  transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+.val:hover{transform:translateY(-6px);box-shadow:0 24px 56px rgba(19,35,61,.13)}
+.val svg{width:36px;height:36px;color:var(--red);margin-bottom:20px}
+.val h3{font-size:clamp(20px,2.4vw,27px)}
+.val p{margin-top:12px;font-size:14.5px;color:var(--ink-70);
   font-weight:300;line-height:1.9}
 
 /* services */
@@ -526,12 +559,15 @@ main{position:relative;z-index:30;background:var(--paper);color:var(--ink)}
 .netSearch input:focus{outline:none;border-color:var(--blue);
   box-shadow:0 0 0 4px rgba(54,98,173,.14)}
 .regRow{display:flex;flex-wrap:wrap;gap:7px}
+/* the count is a second element in the chip, not a suffix on the word — a flex
+   gap keeps «الشرقية 25» apart whichever way the bidi run resolves */
 .regRow button{background:#fff;border:1.5px solid var(--hair);border-radius:100px;
   padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-70);
+  display:inline-flex;align-items:baseline;gap:7px;
   transition:background .28s,color .28s,border-color .28s}
 .regRow button:hover{border-color:var(--blue);color:var(--blue-deep)}
 .regRow button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
-.regRow button .n{font-family:var(--nums);font-size:11.5px;opacity:.72;margin-inline-start:5px}
+.regRow button .n{font-family:var(--nums);font-size:11.5px;opacity:.72}
 /* corridors — the routes fleets actually run */
 .corRow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;
   padding-top:10px;border-top:1px solid var(--hair)}
@@ -649,7 +685,7 @@ main{position:relative;z-index:30;background:var(--paper);color:var(--ink)}
 .social-inline{margin-top:clamp(28px,3.6vw,44px);padding-top:24px;
   border-top:1px solid var(--w-line);display:flex;align-items:center;gap:12px}
 .social-inline > span{font-size:14px;font-weight:700;color:var(--w-80);margin-inline-end:2px}
-.social-inline a{width:42px;height:42px;border:1.5px solid var(--w-line);border-radius:50%;
+.social-inline a{width:44px;height:44px;border:1.5px solid var(--w-line);border-radius:50%;
   display:grid;place-items:center;color:#fff;
   transition:background .35s var(--ease),color .35s,border-color .35s,transform .35s var(--ease)}
 .social-inline a:hover{background:#fff;color:var(--blue-ink);border-color:#fff;transform:translateY(-3px)}
@@ -739,7 +775,11 @@ form{background:#fff;border-radius:var(--rad);padding:clamp(22px,3vw,44px);color
 
 /* footer */
 footer{background:var(--navy);color:#fff;padding:clamp(54px,7vw,100px) var(--gut) 32px}
-.fG{display:grid;grid-template-columns:1.45fr .85fr .95fr 1.5fr;gap:clamp(24px,3.4vw,50px)}
+/* Five blocks live here — brand, three link columns and the head-office
+   details. The grid declared four, so the contact block wrapped onto a row of
+   its own and left the phone number stranded below a band of empty navy. */
+.fG{display:grid;grid-template-columns:1.35fr .8fr .95fr .8fr 1.5fr;
+  gap:clamp(20px,2.6vw,42px)}
 footer .mk img{height:46px;width:auto;margin-bottom:20px}
 footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;max-width:36ch}
 .fc h5{font-size:11px;font-family:var(--lat);letter-spacing:.18em;color:var(--red-lit);
@@ -762,7 +802,7 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
 .fc.contact a[href^="mailto"] .v{overflow-wrap:break-word}
 .fc.contact p.ln .v{font-weight:400;color:var(--w-80)}
 .socials{display:flex;gap:11px;margin-top:22px}
-.socials a{width:40px;height:40px;border:1.5px solid var(--w-line);border-radius:50%;
+.socials a{width:44px;height:44px;border:1.5px solid var(--w-line);border-radius:50%;
   display:grid;place-items:center;transition:all .35s var(--ease)}
 .socials a:hover{background:#fff;color:var(--navy);border-color:#fff;transform:translateY(-3px)}
 .socials svg{width:17px;height:17px}
@@ -798,7 +838,7 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
   header .hdr-cta{display:none}
   nav.main .navCta{margin-top:22px;background:var(--red);color:#fff;
     border-radius:100px;padding:15px 34px;font-size:17px;font-weight:800}
-  .svc,.wG,.vmG,.valGrid{grid-template-columns:1fr}
+  .svc,.wG,.vmG,.valGrid,.abG{grid-template-columns:1fr}
   .vmG{gap:1px}
   .frow{grid-template-columns:1fr}
   .netWrap{--netH:380px}
@@ -819,9 +859,7 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
   #stats .v{padding-top:12px}
   .gGrid{grid-template-columns:1fr}
   .gShot:first-child{grid-column:auto;aspect-ratio:4/3}
-  /* icon-only on a small screen: the pill covered the map's attribution */
-  #wa{padding:14px;border-radius:50%}
-  #wa .lbl{display:none}
+  #wa{width:52px;height:52px}
   .pRails{-webkit-mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent);
     mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent)}
   .fBot{flex-direction:column;gap:8px}
@@ -829,6 +867,9 @@ footer .ab{font-size:14.5px;color:var(--w-55);font-weight:300;line-height:1.95;m
   .fc a{padding-block:12px;margin-bottom:0}
   .fc.contact .ln{margin-bottom:14px}
   .direct a,.chip b{padding-block:14px}
+  /* the wordmark is a link home; give the thumb the full 44px without
+     changing where the logo sits */
+  .brand{min-height:44px}
   .regRow button,.corRow button,.intents button{padding-block:12px}
   .doneCta a,.st{padding-block:14px}
 }
@@ -1019,12 +1060,15 @@ html.rm .pRails{-webkit-mask-image:none;mask-image:none}
 
 <!-- ABOUT -->
 <section class="sec" id="about">
-  <div class="wrap">
-    <div class="eyebrow rv">ABOUT PETROLY</div>
-    <h2 class="h2 rv">من نحن</h2>
-    <p class="lede rv">انطلقت شركة بترولي للخدمات البترولية والنقليات في عام 1976م، وكانت ولا زالت تجدد خدماتها وفق راية طموحة وأصيلة، لتتناغم اليوم مع رؤية المملكة 2030 بكل ثقة — صاحبةً للصدارة والانتشار في تقديم الخدمات البترولية والنقليات وتجارة التجزئة على مستوى المملكة والخليج العربي.</p>
-    <p class="lede rv">وتشمل أعمالنا مراكز خدمة المركبات بمواصفات ومعايير عالية الجودة، ومستويات شاملة من الأمن والسلامة والمحافظة على البيئة، وسائرة في طريق تنمية أنشطة المسؤولية الاجتماعية، انطلاقاً من قيم الأصالة والمصداقية وتطوير المجتمع.</p>
-
+  <div class="wrap abG">
+    <div class="abHead">
+      <div class="eyebrow rv">ABOUT PETROLY</div>
+      <h2 class="h2 rv">من نحن</h2>
+    </div>
+    <div class="abBody">
+      <p class="lede rv">انطلقت شركة بترولي للخدمات البترولية والنقليات في عام 1976م، وكانت ولا زالت تجدد خدماتها وفق راية طموحة وأصيلة، لتتناغم اليوم مع رؤية المملكة 2030 بكل ثقة — صاحبةً للصدارة والانتشار في تقديم الخدمات البترولية والنقليات وتجارة التجزئة على مستوى المملكة والخليج العربي.</p>
+      <p class="lede rv">وتشمل أعمالنا مراكز خدمة المركبات بمواصفات ومعايير عالية الجودة، ومستويات شاملة من الأمن والسلامة والمحافظة على البيئة، وسائرة في طريق تنمية أنشطة المسؤولية الاجتماعية، انطلاقاً من قيم الأصالة والمصداقية وتطوير المجتمع.</p>
+    </div>
   </div>
 </section>
 
@@ -1037,25 +1081,21 @@ html.rm .pRails{-webkit-mask-image:none;mask-image:none}
       وهي المنظومة التي التزمنا بها تجاه عملائنا منذ اليوم الأول: <b>بترولي ثقة على الطريق</b>.</p>
     <div class="valGrid">
       <article class="val rv">
-        <span class="vn num" aria-hidden="true">01</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
         <h3>الثقة</h3>
         <p>وعدنا منذ عام 1976: «بترولي ثقة على الطريق». أصول مملوكة وتشغيل داخلي، فالتزامنا بمواعيد التوريد التزام مباشر لا وساطة فيه.</p>
       </article>
       <article class="val rv">
-        <span class="vn num" aria-hidden="true">02</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="M12 8.5v4M12 16h.01"/></svg>
         <h3>السلامة</h3>
         <p>الأمن والسلامة والصحة والبيئة أولوية في كل محطة وكل رحلة نقل، وفق الأنظمة المعتمدة لنقل وتخزين المشتقات البترولية.</p>
       </article>
       <article class="val rv">
-        <span class="vn num" aria-hidden="true">03</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2Z"/></svg>
         <h3>الجودة</h3>
         <p>معايير موحّدة تُطبَّق في كل محطة وكل ناقلة دون استثناء، ومراكز خدمة مركبات بمواصفات عالية.</p>
       </article>
       <article class="val rv">
-        <span class="vn num" aria-hidden="true">04</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v3M12 19v3M2.5 12h3M18.5 12h3M5 5l2.1 2.1M16.9 16.9 19 19M5 19l2.1-2.1M16.9 7.1 19 5"/><circle cx="12" cy="12" r="3.6"/></svg>
         <h3>الابتكار</h3>
         <p>خدمات مبتكرة ونظم متقدمة تعيد تعريف تجربة التزود بالوقود، تناغماً مع رؤية المملكة 2030.</p>
@@ -1777,7 +1817,19 @@ function boot(){
      change the document height as they settle, so the page ended up short of
      the mark. Long jumps now go straight there, and every jump re-measures
      once it arrives. */
-  const headerH = () => (($('#hdr') || {}).offsetHeight || 0);
+  /* The header is 82px at the top of the page and collapses to 72px as soon as
+     you scroll, so measuring it mid-jump gave a landing that was 10px off
+     whichever side of the collapse the measurement fell on. Every jump ends with
+     the header collapsed, so that is the height to reserve — measured once by
+     forcing the compact state, and cached. */
+  let compactH = 0;
+  function headerH(){
+    const h = $('#hdr'); if (!h) return 0;
+    if (h.classList.contains('solid')) { compactH = h.offsetHeight; return compactH; }
+    if (compactH) return compactH;
+    h.classList.add('solid'); compactH = h.offsetHeight; h.classList.remove('solid');
+    return compactH;
+  }
   function targetY(el){
     return Math.max(0, el.getBoundingClientRect().top + scrollY - headerH() - 10);
   }
@@ -1786,13 +1838,13 @@ function boot(){
     const far = Math.abs(y - scrollY) > innerHeight * 3;   // across the film
     const settle = () => {
       const y2 = targetY(el);
-      if (Math.abs(y2 - scrollY) < 4) return;
+      if (Math.abs(y2 - scrollY) < 2) return;
       if (lenis) lenis.scrollTo(y2, { immediate: true }); else scrollTo(0, y2);
     };
     if (RM || far) {
       if (lenis) lenis.scrollTo(y, { immediate: true }); else scrollTo(0, y);
       requestAnimationFrame(()=>{ ScrollTrigger.refresh(); settle();
-        requestAnimationFrame(settle); setTimeout(settle, 220); });
+        requestAnimationFrame(settle); setTimeout(settle, 220); setTimeout(settle, 700); });
     } else if (lenis) {
       lenis.scrollTo(y, { duration: 1.0, onComplete: settle });
       setTimeout(settle, 1200);
@@ -1860,13 +1912,17 @@ function boot(){
         .to('#streaks',{opacity:0,duration:5},31)
         .to('#glow',{opacity:0,duration:6},31)
         .to('#skyDawn',{opacity:.20,duration:7},31)
-        .to('#thread',{scaleY:9.5,x:'34vw',y:0,duration:8,ease:'power2.inOut'},31)
-        .to('#fill',{height:'100%',duration:12},34)
+        /* 34vw put the thread at 1210px on a 1440 screen — straight through the
+           «200+» column and its caption. Park it in the margin beside the
+           1200px content block instead, and leave the narrow layout alone. */
+        .to('#thread',{scaleY:9.5,y:0,duration:8,ease:'power2.inOut',
+             x:()=> innerWidth>=1025 ? innerWidth/2 - 46 : innerWidth*.34},31)
+        .to('#fill',{scaleY:1,duration:12},34)
         .fromTo('#stats',{opacity:0},{opacity:1,duration:5},34)
         .fromTo('#stats .v',{y:60,opacity:0},{y:0,opacity:1,duration:6,stagger:1.3},34)
         .fromTo('#stats .k',{y:60,opacity:0},{y:0,opacity:1,duration:6,stagger:1.3},34.4)
         .to('#stats',{opacity:0,duration:4},47)
-        .to('#fill',{height:'0%',duration:4},47);
+        .to('#fill',{scaleY:0,duration:4},47);
 
     film.to('#thread',{scaleY:2,x:0,opacity:0,duration:6,ease:'power2.inOut'},48)
         .to('#skyDawn',{opacity:0,duration:5},48)
@@ -1969,6 +2025,21 @@ function boot(){
   addEventListener('resize', chrome, {passive:true});
   chrome();
   if(RM) skipFilm.classList.add('hide');
+
+  /* Once the enquiry panel or the footer is on screen the visitor already has
+     every way to reach us in front of them, and the floating button would be
+     sitting on top of those controls — so it steps aside. This is an observer
+     rather than a measurement inside the scroll handler: reading a rect on every
+     scroll event forces a layout each frame, and it pushed the worst frame of
+     the film from 39ms to over 130ms. */
+  if('IntersectionObserver' in window){
+    const near=new Set();
+    const io=new IntersectionObserver(es=>{
+      es.forEach(e=>e.isIntersecting?near.add(e.target):near.delete(e.target));
+      wa.classList.toggle('away', near.size>0);
+    },{rootMargin:'0px 0px -15% 0px'});
+    ['#quote','#contact'].forEach(sel=>{ const el=$(sel); if(el) io.observe(el); });
+  }
 
   /* footer shortcuts that open the enquiry form on the right intent */
   $$('[data-intent-link]').forEach(a=>a.addEventListener('click',()=>{
